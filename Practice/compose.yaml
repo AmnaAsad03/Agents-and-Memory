@@ -1,0 +1,39 @@
+services:
+  personal-ai-assistant:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: personal-ai-assistant-container
+
+    ports:
+      - "8001:8001"
+
+    env_file:
+      - .env
+
+    environment:
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      LANGGRAPH_CHECKPOINT_DB: /app/data/langgraph_checkpoints.db
+
+    volumes:
+      - personal-ai-assistant-data:/app/data
+
+    restart: unless-stopped
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8001/docs')"
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  personal-ai-assistant-data:
+    external: true
